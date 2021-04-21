@@ -1,0 +1,154 @@
+---
+title: "United States Suicides 1979-2016 by Age and Sex"
+author: "Alex Koener"
+date: "4/20/2021"
+output: html_document
+---
+
+The objective of my final project is to analyze the number of suicides in the United States based on the year, age range, and gender to demonstrate how disproportionate suicide rates are between genders and age groups. Women, especially in America, have faced many systemic issues that still need to be rectified including wage gap, etc. Men on the other hand are also facing a few of issues, one of those being suicides at a much higher rate than females.
+
+The LGBTQ community wasn't intentionally left out of this study, the data set used did not provide any additional data.
+
+
+## Data Wrangling
+
+This dataset was obtained through Kaggle.com, a popular website for people to post their cleaned datasets. The link to the data set is: (https://www.kaggle.com/szamil/who-suicide-statistics) which provides citations to the orginal datasets.
+
+This section is for wraggling data to make it more usable.
+```{r, include=FALSE}
+
+library(ggplot2)
+library(tidyverse)
+library(reshape2)
+
+```
+
+```{r}
+
+suicideData <- read.csv("who_suicide_statistics.csv")
+
+levels <- c("5-14 years","15-24 years", "25-34 years", "35-54 years", "55-74 years", "75+ years")
+
+suicideData$age <- factor(suicideData$age, levels = levels)
+
+suicideData <- suicideData[!is.na(suicideData$suicides_no),]
+
+usSuicides <- suicideData %>%
+  filter(country == "United States of America")
+
+```
+
+## Male vs Female by Age Groups Bar Graph
+
+This first visualization demonstrates the differences in total suicides between genders and age groups with the help of a bar graph in ggplot2.
+
+Based on the data in the visualization, there are 253,609 total females and 947,792 total males who committed suicide. That means that for every 1 women that commits suicide, 3.7 men men do as well; that is nearly 400% more suicides!
+
+```{r pressure, echo=FALSE}
+
+ggplot(usSuicides, aes(x=age, y=suicides_no, fill=sex)) +
+  geom_col() +
+  theme_linedraw() +
+  labs(title = "US Suicides 1979-2016 by Age Group",
+       y = "Number of Suicides",
+       x = "Age Group",
+       fill = "Gender")
+
+```
+
+```{r}
+## Female Suicides
+usSuicidesFemale <- usSuicides %>%
+  filter(sex == "female")
+
+sum(usSuicidesFemale$suicides_no)
+
+
+## Male Suicides
+usSuicidesMale <- usSuicides %>%
+  filter(sex == "male")
+
+sum(usSuicidesMale$suicides_no)
+
+
+# Men:Women Suicide Rate
+sum(usSuicidesMale$suicides_no) / sum(usSuicidesFemale$suicides_no)
+```
+
+
+
+## Time Series
+
+This next visualization demonstrates the differences in suicide rates between gender and age groups over 37 years using ggplot2.
+
+Using facet grid, I separated male and females to show the contrast in total suicides. There are 253,609 total females and 947,792 total males who committed suicide.
+
+```{r, echo=FALSE}
+
+ggplot(usSuicides, aes(x=year, y=suicides_no, color = age)) +
+  geom_line() +
+  theme_linedraw() +
+  labs(title = "US Suicides 1979-2016 by Age and Sex",
+       y = "Number of Suicides",
+       x = "Year",
+       color = "Age Group") +
+  facet_grid(rows=vars(sex))
+
+```
+
+
+
+## Stacked Bar Graph Time Series
+
+This final visualization demontrates the differences in suicide rates between gender and age groups over 37 years and better represents the disportionality using ggplot2.
+
+Using facet grid, I separated male and females to show the contrast in total suicides between genders, as well as colored the bar sacks to highlight the age groups. There are 253,609 total females and 947,792 total males who committed suicide.
+
+```{r, echo=FALSE}
+
+ggplot(usSuicides, aes(x=year, y=suicides_no, fill = age)) +
+  geom_col() +
+  theme_linedraw()+
+  facet_grid(rows=vars(sex)) +
+  labs(title = "US Suicides 1979-2016 by Age and Sex",
+       y = "Number of Suicides",
+       x = "Year",
+       fill = "Age Group")
+
+```
+
+
+
+## Correlations
+
+This final section is to display correlations between suicide rates and different variables including sex, age, and population.
+
+```{r}
+
+m1 <- lm(suicides_no ~ sex, usSuicides)
+#summary(m1)
+## Adjusted R-squared:  0.3498
+
+m2 <- lm(suicides_no ~ age, usSuicides)
+#summary(m2)
+## Adjusted R-squared:  0.4387
+
+m3 <- lm(suicides_no ~ population, usSuicides)
+#summary(m3)
+## Adjusted R-squared:  0.2883
+
+```
+
+These results show that there is a fair amount of correlation between the age, sex, population, and the number of suicides that occur. An R-squared of ~0.44 isn't enough of a correlation to confirm that their likely causing each other, but it is enough to keep in the back of your mind and ponder.
+
+
+## Conclusion
+
+There is a vast difference in the number of suicides between males and females demonstrated in this project. Men are 3.7 times more likely to commit suicide then women are and men in the 35-54 year age group are the most likely to commit suicide. Using these visualization and statistic measures helped elaborate the gravity of this difference. Bringing awareness to this topic will save peoples life in the future.
+
+
+## Project File Link
+
+The code and project file is linked here on my github: (https://github.com/koeneralex/visualanalytics-final-project).
+
+
